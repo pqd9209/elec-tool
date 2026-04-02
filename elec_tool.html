@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="전기 실무">
+<meta name="theme-color" content="#0a0c12">
+<title>전기공사 실무도구</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0a0c12;
+  --surface: #13161f;
+  --surface2: #1a1d28;
+  --surface3: #20243280;
+  --border: rgba(255,255,255,0.07);
+  --border2: rgba(255,255,255,0.13);
+  --text: #e8eaf0;
+  --text-sub: #7a8099;
+  --text-dim: #454a5e;
+  --accent: #4f9eff;
+  --accent-dim: rgba(79,158,255,0.1);
+  --accent-border: rgba(79,158,255,0.3);
+  --green: #3ecf8e;
+  --green-dim: rgba(62,207,142,0.1);
+  --green-border: rgba(62,207,142,0.3);
+  --amber: #f5a623;
+  --amber-dim: rgba(245,166,35,0.1);
+  --amber-border: rgba(245,166,35,0.3);
+  --red: #ff5f5f;
+  --red-dim: rgba(255,95,95,0.1);
+  --mono: 'IBM Plex Mono', monospace;
+  --sans: 'Noto Sans KR', sans-serif;
+  --radius: 10px;
+  --radius-lg: 14px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;overflow:hidden;}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);display:flex;flex-direction:column;}
+
+/* App bar */
+.app-bar{
+  background:rgba(10,12,18,0.95);
+  backdrop-filter:blur(16px);
+  -webkit-backdrop-filter:blur(16px);
+  border-bottom:1px solid var(--border);
+  padding:14px 16px 10px;
+  flex-shrink:0;
+  padding-top:max(14px, env(safe-area-inset-top));
+}
+.app-bar-title{font-family:var(--mono);font-size:14px;font-weight:600;color:var(--accent);letter-spacing:.06em;}
+.app-bar-sub{font-size:10px;color:var(--text-dim);margin-top:2px;font-family:var(--mono);}
+
+/* Tab bar */
+.tab-bar{
+  display:flex;
+  background:var(--surface);
+  border-bottom:1px solid var(--border);
+  overflow-x:auto;
+  flex-shrink:0;
+  scrollbar-width:none;
+}
+.tab-bar::-webkit-scrollbar{display:none;}
+.tab-item{
+  flex:0 0 auto;
+  padding:10px 14px;
+  font-size:11px;
+  font-weight:500;
+  color:var(--text-dim);
+  cursor:pointer;
+  border-bottom:2px solid transparent;
+  white-space:nowrap;
+  transition:all .15s;
+  font-family:var(--mono);
+}
+.tab-item.active{color:var(--accent);border-bottom-color:var(--accent);}
+
+/* Pages */
+.pages{flex:1;overflow:hidden;position:relative;}
+.page{
+  position:absolute;inset:0;
+  overflow-y:auto;
+  padding:16px;
+  display:none;
+  -webkit-overflow-scrolling:touch;
+}
+.page.active{display:block;}
+
+/* Common */
+.section-label{
+  font-size:10px;font-weight:700;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--text-dim);
+  margin-bottom:8px;font-family:var(--mono);
+}
+.seg{display:grid;gap:6px;margin-bottom:16px;}
+.seg-3{grid-template-columns:1fr 1fr 1fr;}
+.seg-2{grid-template-columns:1fr 1fr;}
+.seg-btn{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius);padding:9px 4px;cursor:pointer;
+  text-align:center;transition:all .15s;color:var(--text-sub);
+}
+.seg-btn .vm{font-family:var(--mono);font-size:14px;font-weight:600;display:block;margin-bottom:1px;}
+.seg-btn .vs{font-size:10px;display:block;color:var(--text-dim);}
+.seg-btn.active{background:var(--accent-dim);border-color:var(--accent-border);color:var(--accent);}
+.seg-btn.active .vs{color:rgba(79,158,255,0.5);}
+
+.cb-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:20px;}
+.cb-btn{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:8px;padding:10px 2px;text-align:center;
+  font-family:var(--mono);font-size:12px;font-weight:500;
+  color:var(--text-sub);cursor:pointer;transition:all .15s;
+}
+.cb-btn.active{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600;}
+
+/* Input */
+.input-group{margin-bottom:14px;}
+.input-label{font-size:11px;color:var(--text-sub);margin-bottom:6px;font-family:var(--mono);}
+.inp{
+  width:100%;background:var(--surface);border:1px solid var(--border2);
+  border-radius:var(--radius);padding:11px 14px;
+  color:var(--text);font-size:15px;font-family:var(--mono);
+  outline:none;transition:border .15s;
+}
+.inp:focus{border-color:var(--accent-border);}
+.inp-row{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.unit{font-size:12px;color:var(--text-dim);margin-left:4px;}
+
+/* Result card */
+.card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius-lg);padding:14px 16px;
+  margin-bottom:10px;position:relative;overflow:hidden;
+  animation:fadeUp .2s ease;
+}
+@keyframes fadeUp{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+.card-accent{position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--accent);border-radius:3px 0 0 3px;}
+.card-accent.green{background:var(--green);}
+.card-accent.amber{background:var(--amber);}
+.card-accent.red{background:var(--red);}
+
+.card-title{font-size:11px;color:var(--text-dim);font-family:var(--mono);margin-bottom:8px;}
+.big-val{font-family:var(--mono);font-size:32px;font-weight:600;color:var(--text);line-height:1;}
+.big-unit{font-size:13px;color:var(--text-sub);margin-left:4px;}
+.big-sub{font-size:11px;color:var(--text-dim);font-family:var(--mono);margin-top:4px;margin-bottom:12px;}
+
+.meta-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:10px;}
+.meta-grid-2{grid-template-columns:repeat(2,1fr);}
+.meta-item{background:var(--surface2);border-radius:8px;padding:8px 10px;}
+.meta-l{font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--text-dim);margin-bottom:3px;font-family:var(--mono);}
+.meta-v{font-family:var(--mono);font-size:14px;font-weight:600;color:var(--text);}
+.meta-v.ok{color:var(--green);}
+.meta-v.warn{color:var(--amber);}
+.meta-v.danger{color:var(--red);}
+.meta-v.accent{color:var(--accent);}
+
+.bar-wrap{height:3px;background:var(--border);border-radius:2px;overflow:hidden;margin-bottom:4px;}
+.bar-fill{height:100%;border-radius:2px;background:var(--green);transition:width .4s ease;}
+.bar-fill.warn{background:var(--amber);}
+.bar-fill.danger{background:var(--red);}
+.bar-label{font-size:10px;color:var(--text-dim);font-family:var(--mono);}
+
+.pill{display:inline-block;font-size:10px;padding:2px 8px;border-radius:4px;font-family:var(--mono);background:var(--surface2);color:var(--text-sub);border:1px solid var(--border);margin-top:8px;}
+.pill.warn{background:var(--amber-dim);color:var(--amber);border-color:var(--amber-border);}
+.pill.ok{background:var(--green-dim);color:var(--green);border-color:var(--green-border);}
+.pill.accent{background:var(--accent-dim);color:var(--accent);border-color:var(--accent-border);}
+
+.calc-btn{
+  width:100%;background:var(--accent);border:none;border-radius:var(--radius);
+  padding:13px;color:#fff;font-size:14px;font-weight:700;
+  font-family:var(--sans);cursor:pointer;margin-top:4px;margin-bottom:16px;
+  transition:opacity .15s;
+}
+.calc-btn:active{opacity:.8;}
+
+.empty{text-align:center;padding:40px 16px;color:var(--text-dim);}
+.empty-icon{font-size:36px;margin-bottom:10px;opacity:.3;}
+.empty-text{font-size:12px;font-family:var(--mono);}
+
+.note-box{
+  padding:10px 12px;background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius);font-size:10px;color:var(--text-dim);
+  line-height:1.8;font-family:var(--mono);margin-top:8px;
+}
+.note-box span{color:var(--text-sub);}
+
+
+/* Table */
+.ref-table{width:100%;border-collapse:collapse;font-size:12px;}
+.ref-table th{
+  background:var(--surface2);color:var(--text-sub);font-weight:500;
+  font-size:10px;padding:8px 10px;text-align:left;
+  border-bottom:1px solid var(--border2);font-family:var(--mono);
+  white-space:nowrap;letter-spacing:.04em;
+}
+.ref-table td{
+  padding:8px 10px;border-bottom:1px solid var(--border);
+  color:var(--text);vertical-align:middle;font-family:var(--mono);font-size:12px;
+}
+.ref-table tr:last-child td{border-bottom:none;}
+.ref-table tr:hover td{background:var(--surface2);}
+.tbl-wrap{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;margin-bottom:12px;}
+.t-accent{color:var(--accent);}
+.t-green{color:var(--green);}
+.t-amber{color:var(--amber);}
+
+/* Conduit table scroll */
+.tbl-scroll{overflow-x:auto;}
+</style>
+</head>
+<body>
+
+<div class="app-bar">
+  <div class="app-bar-title">⚡ 전기공사 실무도구</div>
+  <div class="app-bar-sub">KEC 기준 · Green E&amp;G</div>
+</div>
+
+<div class="tab-bar">
+  <div class="tab-item active" onclick="switchTab(0,this)">케이블</div>
+  <div class="tab-item" onclick="switchTab(1,this)">전압강하</div>
+  <div class="tab-item" onclick="switchTab(2,this)">전동기</div>
+  <div class="tab-item" onclick="switchTab(3,this)">전선관</div>
+  <div class="tab-item" onclick="switchTab(4,this)">차단기</div>
+</div>
+
+<div class="pages">
+
+<!-- ===== TAB 0: 케이블 사이즈 ===== -->
+<div class="page active" id="page-0">
+  <div class="section-label">전압 선택</div>
+  <div class="seg seg-3" id="volt-seg">
+    <div class="seg-btn active" onclick="cable_setVolt('220',this)"><span class="vm">220V</span><span class="vs">단상</span></div>
+    <div class="seg-btn" onclick="cable_setVolt('380',this)"><span class="vm">380V</span><span class="vs">단상</span></div>
+    <div class="seg-btn" onclick="cable_setVolt('3p380',this)"><span class="vm">380V</span><span class="vs">3상</span></div>
+  </div>
+  <div class="section-label">차단기 용량</div>
+  <div class="cb-grid" id="cable-cb-grid"></div>
+  <div class="section-label">케이블 사이즈</div>
+  <div id="cable-result">
+    <div class="empty"><div class="empty-icon">🔌</div><div class="empty-text">차단기 용량을 선택하세요</div></div>
+  </div>
+  <div class="note-box"><span>기준:</span> FW-CV 600V · 트레이 · 40℃ (KEC 별표5)<br><span>주의:</span> 전동기 부하 시 시동전류 고려 상향 권장</div>
+</div>
+
+<!-- ===== TAB 1: 전압강하 ===== -->
+<div class="page" id="page-1">
+  <div class="section-label">회로 조건</div>
+  <div class="seg seg-2" id="vd-volt-seg">
+    <div class="seg-btn active" onclick="vd_setVolt('1p',this)"><span class="vm">단상</span><span class="vs">220V / 380V</span></div>
+    <div class="seg-btn" onclick="vd_setVolt('3p',this)"><span class="vm">3상</span><span class="vs">380V</span></div>
+  </div>
+
+  <div class="inp-row" style="margin-bottom:14px;">
+    <div class="input-group" style="margin-bottom:0;">
+      <div class="input-label">전압 (V)</div>
+      <input class="inp" id="vd-voltage" type="number" value="220" placeholder="220">
+    </div>
+    <div class="input-group" style="margin-bottom:0;">
+      <div class="input-label">전류 (A)</div>
+      <input class="inp" id="vd-current" type="number" placeholder="예: 30">
+    </div>
+  </div>
+  <div class="inp-row" style="margin-bottom:14px;">
+    <div class="input-group" style="margin-bottom:0;">
+      <div class="input-label">케이블 길이 (m)</div>
+      <input class="inp" id="vd-length" type="number" placeholder="예: 50">
+    </div>
+    <div class="input-group" style="margin-bottom:0;">
+      <div class="input-label">케이블 단면적 (mm²)</div>
+      <input class="inp" id="vd-area" type="number" placeholder="예: 10">
+    </div>
+  </div>
+  <button class="calc-btn" onclick="calcVD()">전압강하 계산</button>
+  <div id="vd-result"></div>
+  <div class="note-box">
+    <span>공식 (단상):</span> e = 35.6 × L × I / (1000 × A)<br>
+    <span>공식 (3상):</span> e = 30.8 × L × I / (1000 × A)<br>
+    <span>기준:</span> KEC — 간선 3% 이하, 분기 2% 이하 권장<br>
+    <span>도체저항:</span> 구리 1/58 Ω·mm²/m
+  </div>
+</div>
+
+<!-- ===== TAB 2: 전동기 전류 ===== -->
+<div class="page" id="page-2">
+  <div class="section-label">전동기 사양</div>
+  <div class="seg seg-2" id="mot-seg">
+    <div class="seg-btn active" onclick="mot_setType('3p',this)"><span class="vm">3상</span><span class="vs">380V</span></div>
+    <div class="seg-btn" onclick="mot_setType('1p',this)"><span class="vm">단상</span><span class="vs">220V</span></div>
+  </div>
+  <div class="input-group">
+    <div class="input-label">전동기 출력 (kW)</div>
+    <input class="inp" id="mot-kw" type="number" placeholder="예: 7.5" step="0.1">
+  </div>
+  <div class="input-group">
+    <div class="input-label">역률 (기본 0.85)</div>
+    <input class="inp" id="mot-pf" type="number" value="0.85" step="0.01" max="1" min="0.5">
+  </div>
+  <div class="input-group">
+    <div class="input-label">효율 (기본 0.90)</div>
+    <input class="inp" id="mot-eff" type="number" value="0.90" step="0.01" max="1" min="0.5">
+  </div>
+  <button class="calc-btn" onclick="calcMotor()">전류 계산</button>
+  <div id="mot-result"></div>
+  <div class="note-box">
+    <span>3상:</span> I = P / (√3 × V × cosφ × η)<br>
+    <span>단상:</span> I = P / (V × cosφ × η)<br>
+    <span>시동전류:</span> 정격의 5~7배 (직입기동 기준)<br>
+    <span>차단기:</span> 정격전류 × 1.25배 이상 선정
+  </div>
+</div>
+
+<!-- ===== TAB 3: 전선관 ===== -->
+<div class="page" id="page-3">
+  <div class="section-label">전선관 선정 참조표</div>
+  <div class="seg seg-2" id="conduit-type-seg">
+    <div class="seg-btn active" onclick="conduit_setType('cd',this)"><span class="vm">CD관</span><span class="vs">합성수지제</span></div>
+    <div class="seg-btn" onclick="conduit_setType('hiv',this)"><span class="vm">금속관</span><span class="vs">박강전선관</span></div>
+  </div>
+  <div class="tbl-wrap tbl-scroll">
+    <table class="ref-table" id="conduit-table"></table>
+  </div>
+  <div class="note-box">
+    <span>기준:</span> KEC 232 / 내선규정 3120절<br>
+    <span>점유율:</span> 단선 48% · 연선 32% 이하<br>
+    <span>관선택:</span> 케이블 외경 합산 후 표에서 선택
+  </div>
+</div>
+
+<!-- ===== TAB 4: 차단기 참조표 ===== -->
+<div class="page" id="page-4">
+  <div class="section-label">MCCB 표준 정격</div>
+  <div class="tbl-wrap">
+    <table class="ref-table">
+      <thead><tr><th>정격(A)</th><th>프레임</th><th>차단용량</th><th>용도</th></tr></thead>
+      <tbody>
+        <tr><td class="t-accent">15</td><td>50AF</td><td>10kA</td><td>분기 (조명/콘센트)</td></tr>
+        <tr><td class="t-accent">20</td><td>50AF</td><td>10kA</td><td>분기</td></tr>
+        <tr><td class="t-accent">30</td><td>50AF</td><td>10kA</td><td>분기</td></tr>
+        <tr><td class="t-accent">40</td><td>50AF</td><td>10kA</td><td>분기</td></tr>
+        <tr><td class="t-accent">50</td><td>50AF</td><td>10kA</td><td>분기</td></tr>
+        <tr><td class="t-accent">63</td><td>100AF</td><td>18kA</td><td>분기/소형간선</td></tr>
+        <tr><td class="t-accent">75</td><td>100AF</td><td>18kA</td><td>간선</td></tr>
+        <tr><td class="t-accent">100</td><td>100AF</td><td>18kA</td><td>간선</td></tr>
+        <tr><td class="t-accent">125</td><td>225AF</td><td>35kA</td><td>간선</td></tr>
+        <tr><td class="t-accent">150</td><td>225AF</td><td>35kA</td><td>간선</td></tr>
+        <tr><td class="t-accent">175</td><td>225AF</td><td>35kA</td><td>간선</td></tr>
+        <tr><td class="t-accent">200</td><td>225AF</td><td>35kA</td><td>간선</td></tr>
+        <tr><td class="t-accent">225</td><td>225AF</td><td>35kA</td><td>간선</td></tr>
+        <tr><td class="t-accent">250</td><td>400AF</td><td>35kA</td><td>주간선</td></tr>
+        <tr><td class="t-accent">300</td><td>400AF</td><td>35kA</td><td>주간선</td></tr>
+        <tr><td class="t-accent">400</td><td>400AF</td><td>35kA</td><td>주간선</td></tr>
+        <tr><td class="t-accent">500</td><td>630AF</td><td>50kA</td><td>주간선/ACB 대체</td></tr>
+        <tr><td class="t-accent">630</td><td>630AF</td><td>50kA</td><td>주간선</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="section-label" style="margin-top:8px;">ELB (누전차단기) 정격</div>
+  <div class="tbl-wrap">
+    <table class="ref-table">
+      <thead><tr><th>정격(A)</th><th>감도전류</th><th>동작시간</th><th>용도</th></tr></thead>
+      <tbody>
+        <tr><td class="t-green">15~30</td><td>15mA</td><td>0.03초</td><td>욕실/주방 인체보호</td></tr>
+        <tr><td class="t-green">30~100</td><td>30mA</td><td>0.03초</td><td>일반 분기회로</td></tr>
+        <tr><td class="t-green">100~400</td><td>100mA</td><td>0.1초</td><td>간선 (기기보호)</td></tr>
+        <tr><td class="t-green">400 이상</td><td>200mA</td><td>0.1초</td><td>주간선 (기기보호)</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="note-box"><span>선택:</span> 인체보호 30mA 이하 · 기기보호 100~200mA<br><span>동작:</span> 감도전류의 2배에서 0.1초 이내 동작</div>
+</div>
+
+
+</div><!-- /pages -->
+
+<script>
+// ==================== DATA ====================
+const CABLE_DATA = [
+  {cb:10,volt:'220',core:2,size:'2.5',allow:26,note:'조명/콘센트'},
+  {cb:15,volt:'220',core:2,size:'2.5',allow:26,note:''},
+  {cb:20,volt:'220',core:2,size:'4',allow:35,note:''},
+  {cb:30,volt:'220',core:2,size:'6',allow:47,note:''},
+  {cb:40,volt:'220',core:2,size:'10',allow:64,note:''},
+  {cb:50,volt:'220',core:2,size:'16',allow:82,note:''},
+  {cb:63,volt:'220',core:2,size:'25',allow:105,note:''},
+  {cb:75,volt:'220',core:2,size:'35',allow:128,note:''},
+  {cb:100,volt:'220',core:2,size:'50',allow:153,note:''},
+  {cb:125,volt:'220',core:2,size:'70',allow:196,note:''},
+  {cb:150,volt:'220',core:2,size:'95',allow:235,note:''},
+  {cb:200,volt:'220',core:2,size:'150',allow:304,note:''},
+  {cb:250,volt:'220',core:2,size:'185',allow:351,note:''},
+  {cb:300,volt:'220',core:2,size:'240',allow:408,note:''},
+  {cb:10,volt:'220',core:3,size:'2.5',allow:26,note:'L+N+PE'},
+  {cb:15,volt:'220',core:3,size:'2.5',allow:26,note:'L+N+PE'},
+  {cb:20,volt:'220',core:3,size:'4',allow:35,note:'L+N+PE'},
+  {cb:30,volt:'220',core:3,size:'6',allow:47,note:'L+N+PE'},
+  {cb:40,volt:'220',core:3,size:'10',allow:64,note:'L+N+PE'},
+  {cb:50,volt:'220',core:3,size:'16',allow:82,note:'L+N+PE'},
+  {cb:63,volt:'220',core:3,size:'25',allow:105,note:'L+N+PE'},
+  {cb:75,volt:'220',core:3,size:'35',allow:128,note:'L+N+PE'},
+  {cb:100,volt:'220',core:3,size:'50',allow:153,note:'L+N+PE'},
+  {cb:125,volt:'220',core:3,size:'70',allow:196,note:'L+N+PE'},
+  {cb:150,volt:'220',core:3,size:'95',allow:235,note:'L+N+PE'},
+  {cb:200,volt:'220',core:3,size:'150',allow:304,note:'L+N+PE'},
+  {cb:250,volt:'220',core:3,size:'185',allow:351,note:'L+N+PE'},
+  {cb:300,volt:'220',core:3,size:'240',allow:408,note:'L+N+PE'},
+  {cb:10,volt:'380',core:2,size:'1.5',allow:21,note:''},
+  {cb:15,volt:'380',core:2,size:'2.5',allow:26,note:''},
+  {cb:20,volt:'380',core:2,size:'2.5',allow:26,note:''},
+  {cb:30,volt:'380',core:2,size:'6',allow:47,note:''},
+  {cb:40,volt:'380',core:2,size:'10',allow:64,note:''},
+  {cb:50,volt:'380',core:2,size:'10',allow:64,note:''},
+  {cb:63,volt:'380',core:2,size:'16',allow:82,note:''},
+  {cb:75,volt:'380',core:2,size:'25',allow:105,note:''},
+  {cb:100,volt:'380',core:2,size:'35',allow:128,note:''},
+  {cb:125,volt:'380',core:2,size:'50',allow:153,note:''},
+  {cb:150,volt:'380',core:2,size:'70',allow:196,note:''},
+  {cb:200,volt:'380',core:2,size:'95',allow:235,note:''},
+  {cb:250,volt:'380',core:2,size:'120',allow:271,note:''},
+  {cb:300,volt:'380',core:2,size:'150',allow:304,note:''},
+  {cb:400,volt:'380',core:2,size:'240',allow:408,note:''},
+  {cb:10,volt:'3p380',core:3,size:'1.5',allow:21,note:'3C+PE별도'},
+  {cb:15,volt:'3p380',core:3,size:'2.5',allow:26,note:'3C+PE별도'},
+  {cb:20,volt:'3p380',core:3,size:'2.5',allow:26,note:'3C+PE별도'},
+  {cb:30,volt:'3p380',core:3,size:'4',allow:35,note:'3C+PE별도'},
+  {cb:40,volt:'3p380',core:3,size:'6',allow:47,note:'3C+PE별도'},
+  {cb:50,volt:'3p380',core:3,size:'10',allow:64,note:'3C+PE별도'},
+  {cb:63,volt:'3p380',core:3,size:'16',allow:82,note:'3C+PE별도'},
+  {cb:75,volt:'3p380',core:3,size:'16',allow:82,note:'3C+PE별도'},
+  {cb:100,volt:'3p380',core:3,size:'25',allow:105,note:'3C+PE별도'},
+  {cb:125,volt:'3p380',core:3,size:'35',allow:128,note:'3C+PE별도'},
+  {cb:150,volt:'3p380',core:3,size:'50',allow:153,note:'3C+PE별도'},
+  {cb:175,volt:'3p380',core:3,size:'50',allow:153,note:'3C+PE별도'},
+  {cb:200,volt:'3p380',core:3,size:'70',allow:196,note:'3C+PE별도'},
+  {cb:250,volt:'3p380',core:3,size:'95',allow:235,note:'3C+PE별도'},
+  {cb:300,volt:'3p380',core:3,size:'120',allow:271,note:'3C+PE별도'},
+  {cb:400,volt:'3p380',core:3,size:'185',allow:351,note:'3C+PE별도'},
+  {cb:500,volt:'3p380',core:3,size:'240',allow:408,note:'3C+PE별도'},
+  {cb:630,volt:'3p380',core:3,size:'325',allow:498,note:'3C+PE별도'},
+  {cb:800,volt:'3p380',core:3,size:'400',allow:561,note:'병렬 포설 검토'},
+  {cb:1000,volt:'3p380',core:3,size:'500',allow:641,note:'병렬 포설 검토'},
+  {cb:10,volt:'3p380',core:4,size:'1.5',allow:18,note:'4C'},
+  {cb:15,volt:'3p380',core:4,size:'2.5',allow:23,note:'4C'},
+  {cb:20,volt:'3p380',core:4,size:'4',allow:31,note:'4C'},
+  {cb:30,volt:'3p380',core:4,size:'6',allow:40,note:'4C'},
+  {cb:40,volt:'3p380',core:4,size:'10',allow:54,note:'4C'},
+  {cb:50,volt:'3p380',core:4,size:'16',allow:70,note:'4C'},
+  {cb:63,volt:'3p380',core:4,size:'16',allow:70,note:'4C'},
+  {cb:75,volt:'3p380',core:4,size:'25',allow:88,note:'4C'},
+  {cb:100,volt:'3p380',core:4,size:'35',allow:110,note:'4C'},
+  {cb:125,volt:'3p380',core:4,size:'50',allow:130,note:'4C'},
+  {cb:150,volt:'3p380',core:4,size:'70',allow:165,note:'4C'},
+  {cb:200,volt:'3p380',core:4,size:'95',allow:200,note:'4C'},
+  {cb:250,volt:'3p380',core:4,size:'120',allow:230,note:'4C'},
+  {cb:300,volt:'3p380',core:4,size:'150',allow:260,note:'4C'},
+  {cb:400,volt:'3p380',core:4,size:'185',allow:295,note:'4C'},
+];
+
+// 전선관 데이터 (CD관 / 박강전선관 — 케이블 수 기준)
+const CONDUIT_CD = [
+  {pipe:'CD22',inner:16,cv1:'2.5',cv2:'4',cv3:'6',cv4:'—',cv6:'—'},
+  {pipe:'CD28',inner:22,cv1:'6',cv2:'10',cv3:'10',cv4:'6',cv6:'—'},
+  {pipe:'CD36',inner:30,cv1:'16',cv2:'16',cv3:'16',cv4:'10',cv6:'6'},
+  {pipe:'CD42',inner:36,cv1:'25',cv2:'25',cv3:'16',cv4:'16',cv6:'10'},
+  {pipe:'CD54',inner:48,cv1:'50',cv2:'35',cv3:'35',cv4:'25',cv6:'16'},
+  {pipe:'CD70',inner:62,cv1:'70',cv2:'70',cv3:'50',cv4:'50',cv6:'35'},
+];
+const CONDUIT_HIV = [
+  {pipe:'16C',inner:14.3,cv1:'2.5',cv2:'2.5',cv3:'—',cv4:'—',cv6:'—'},
+  {pipe:'22C',inner:20.0,cv1:'6',cv2:'4',cv3:'2.5',cv4:'—',cv6:'—'},
+  {pipe:'28C',inner:26.0,cv1:'16',cv2:'10',cv3:'6',cv4:'4',cv6:'—'},
+  {pipe:'36C',inner:33.8,cv1:'25',cv2:'16',cv3:'16',cv4:'10',cv6:'6'},
+  {pipe:'42C',inner:39.6,cv1:'35',cv2:'25',cv3:'25',cv4:'16',cv6:'10'},
+  {pipe:'54C',inner:51.5,cv1:'70',cv2:'50',cv3:'35',cv4:'35',cv6:'25'},
+  {pipe:'70C',inner:67.0,cv1:'120',cv2:'95',cv3:'70',cv4:'50',cv6:'35'},
+  {pipe:'82C',inner:79.0,cv1:'150',cv2:'120',cv3:'95',cv4:'70',cv6:'50'},
+];
+
+
+// ==================== TAB ====================
+function switchTab(idx, el) {
+  document.querySelectorAll('.tab-item').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('page-'+idx).classList.add('active');
+}
+
+// ==================== CABLE ====================
+let cable_volt = '220';
+function cable_setVolt(v, el) {
+  cable_volt = v;
+  document.querySelectorAll('#volt-seg .seg-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  cable_buildGrid();
+  cable_showEmpty();
+}
+function cable_buildGrid() {
+  const cbs = [...new Set(CABLE_DATA.filter(d=>d.volt===cable_volt).map(d=>d.cb))].sort((a,b)=>a-b);
+  const g = document.getElementById('cable-cb-grid');
+  g.innerHTML='';
+  cbs.forEach(cb=>{
+    const btn=document.createElement('div');
+    btn.className='cb-btn';
+    btn.textContent=cb+'A';
+    btn.onclick=()=>{
+      document.querySelectorAll('#cable-cb-grid .cb-btn').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      cable_showResult(cb);
+    };
+    g.appendChild(btn);
+  });
+}
+function cable_showEmpty(){
+  document.getElementById('cable-result').innerHTML='<div class="empty"><div class="empty-icon">🔌</div><div class="empty-text">차단기 용량을 선택하세요</div></div>';
+}
+function cable_showResult(cb){
+  const rows=CABLE_DATA.filter(d=>d.volt===cable_volt&&d.cb===cb);
+  const area=document.getElementById('cable-result');
+  area.innerHTML='';
+  rows.forEach(d=>{
+    const ratio=Math.round((d.allow/d.cb)*100);
+    const isWarn=d.note.includes('병렬');
+    const vLabel=cable_volt==='220'?'220V 단상':cable_volt==='380'?'380V 단상':'380V 3상';
+    const c=document.createElement('div');
+    c.className='card';
+    c.innerHTML=`
+      <div class="card-accent${isWarn?' amber':''}"></div>
+      <div class="card-title">FW-CV ${d.core}심 · 트레이 · ${vLabel}</div>
+      <div><span class="big-val">${d.size}</span><span class="big-unit">mm²</span></div>
+      <div class="big-sub">허용전류 ${d.allow}A · 차단기 ${cb}A</div>
+      <div class="meta-grid">
+        <div class="meta-item"><div class="meta-l">차단기</div><div class="meta-v accent">${cb}A</div></div>
+        <div class="meta-item"><div class="meta-l">허용전류</div><div class="meta-v">${d.allow}A</div></div>
+        <div class="meta-item"><div class="meta-l">여유율</div><div class="meta-v ${isWarn?'warn':'ok'}">${ratio}%</div></div>
+      </div>
+      <div class="bar-wrap"><div class="bar-fill${isWarn?' warn':''}" style="width:${Math.min(ratio,100)}%"></div></div>
+      <div class="bar-label">허용전류 여유 ${ratio}%</div>
+      ${d.note?`<div class="pill${isWarn?' warn':''}">${d.note}</div>`:''}
+    `;
+    area.appendChild(c);
+  });
+}
+cable_buildGrid();
+
+// ==================== 전압강하 ====================
+let vd_type='1p';
+function vd_setVolt(t,el){
+  vd_type=t;
+  document.querySelectorAll('#vd-volt-seg .seg-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('vd-voltage').value=t==='1p'?'220':'380';
+}
+function calcVD(){
+  const V=parseFloat(document.getElementById('vd-voltage').value)||0;
+  const I=parseFloat(document.getElementById('vd-current').value)||0;
+  const L=parseFloat(document.getElementById('vd-length').value)||0;
+  const A=parseFloat(document.getElementById('vd-area').value)||0;
+  if(!I||!L||!A){
+    document.getElementById('vd-result').innerHTML='<div class="empty"><div class="empty-text">모든 값을 입력하세요</div></div>';
+    return;
+  }
+  const k=vd_type==='1p'?35.6:30.8;
+  const e=k*L*I/(1000*A);
+  const pct=V>0?(e/V*100):0;
+  const limit_main=3, limit_branch=2;
+  const isOkMain=pct<=limit_main, isOkBranch=pct<=limit_branch;
+  const cls=pct<=2?'ok':pct<=3?'warn':'danger';
+  const barCls=pct<=2?'':pct<=3?' warn':' danger';
+  const barW=Math.min((pct/5)*100,100);
+  document.getElementById('vd-result').innerHTML=`
+    <div class="card">
+      <div class="card-accent ${cls}"></div>
+      <div class="card-title">전압강하 계산 결과 · ${vd_type==='1p'?'단상':'3상'}</div>
+      <div><span class="big-val">${e.toFixed(2)}</span><span class="big-unit">V</span></div>
+      <div class="big-sub">전압강하율 ${pct.toFixed(2)}% (${V}V 기준)</div>
+      <div class="meta-grid">
+        <div class="meta-item"><div class="meta-l">강하전압</div><div class="meta-v ${cls}">${e.toFixed(2)}V</div></div>
+        <div class="meta-item"><div class="meta-l">강하율</div><div class="meta-v ${cls}">${pct.toFixed(2)}%</div></div>
+        <div class="meta-item"><div class="meta-l">잔여전압</div><div class="meta-v">${(V-e).toFixed(1)}V</div></div>
+      </div>
+      <div class="bar-wrap"><div class="bar-fill${barCls}" style="width:${barW}%"></div></div>
+      <div class="bar-label">권장 한계 5% 대비 ${pct.toFixed(2)}%</div>
+      <div class="pill ${isOkBranch?'ok':isOkMain?'warn':''}">분기회로 2% ${isOkBranch?'✓ 적합':'✗ 초과'}</div>
+      <div class="pill ${isOkMain?'ok':''}" style="margin-left:6px;">간선 3% ${isOkMain?'✓ 적합':'✗ 초과'}</div>
+    </div>
+  `;
+}
+
+// ==================== 전동기 ====================
+let mot_type='3p';
+function mot_setType(t,el){
+  mot_type=t;
+  document.querySelectorAll('#mot-seg .seg-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+}
+function calcMotor(){
+  const kW=parseFloat(document.getElementById('mot-kw').value)||0;
+  const pf=parseFloat(document.getElementById('mot-pf').value)||0.85;
+  const eff=parseFloat(document.getElementById('mot-eff').value)||0.90;
+  if(!kW){
+    document.getElementById('mot-result').innerHTML='<div class="empty"><div class="empty-text">출력(kW)을 입력하세요</div></div>';
+    return;
+  }
+  const V=mot_type==='3p'?380:220;
+  const sqrt3=1.732;
+  const P=kW*1000;
+  const I=mot_type==='3p'?(P/(sqrt3*V*pf*eff)):(P/(V*pf*eff));
+  const Istart=I*6;
+  const Icb=I*1.25;
+  // 케이블 추천 (3상 기준)
+  const cableData=CABLE_DATA.filter(d=>d.volt==='3p380'&&d.core===3&&d.allow>=I).sort((a,b)=>a.allow-b.allow);
+  const cable=cableData.length?cableData[0]:null;
+  // 차단기 추천
+  const cbSizes=[10,15,20,30,40,50,63,75,100,125,150,175,200,225,250,300,400,500,630];
+  const recCB=cbSizes.find(s=>s>=Icb)||630;
+  document.getElementById('mot-result').innerHTML=`
+    <div class="card">
+      <div class="card-accent green"></div>
+      <div class="card-title">${mot_type==='3p'?'3상 380V':'단상 220V'} · ${kW}kW 전동기</div>
+      <div><span class="big-val">${I.toFixed(1)}</span><span class="big-unit">A</span></div>
+      <div class="big-sub">정격전류 (역률 ${pf} · 효율 ${eff})</div>
+      <div class="meta-grid">
+        <div class="meta-item"><div class="meta-l">정격전류</div><div class="meta-v ok">${I.toFixed(1)}A</div></div>
+        <div class="meta-item"><div class="meta-l">시동전류×6</div><div class="meta-v warn">${Istart.toFixed(0)}A</div></div>
+        <div class="meta-item"><div class="meta-l">CB 선정기준</div><div class="meta-v accent">${Icb.toFixed(1)}A↑</div></div>
+      </div>
+      <div class="meta-grid meta-grid-2" style="margin-top:6px;">
+        <div class="meta-item"><div class="meta-l">권장 차단기</div><div class="meta-v accent">${recCB}A</div></div>
+        <div class="meta-item"><div class="meta-l">권장 케이블</div><div class="meta-v ok">${cable?'FW-CV '+cable.size+'mm²':'별도산정'}</div></div>
+      </div>
+      <div class="pill ok">차단기 정격 × 1.25 이상 선정</div>
+    </div>
+  `;
+}
+
+// ==================== 전선관 ====================
+let conduit_type='cd';
+function conduit_setType(t,el){
+  conduit_type=t;
+  document.querySelectorAll('#conduit-type-seg .seg-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  buildConduitTable();
+}
+function buildConduitTable(){
+  const data=conduit_type==='cd'?CONDUIT_CD:CONDUIT_HIV;
+  const t=document.getElementById('conduit-table');
+  t.innerHTML=`
+    <thead><tr>
+      <th>관 규격</th><th>내경(mm)</th>
+      <th>1C</th><th>2C</th><th>3C</th><th>4C</th><th>6C</th>
+    </tr></thead>
+    <tbody>${data.map(r=>`
+      <tr>
+        <td class="t-accent">${r.pipe}</td>
+        <td>${r.inner}</td>
+        <td>${r.cv1}</td><td>${r.cv2}</td><td>${r.cv3}</td><td>${r.cv4}</td><td>${r.cv6}</td>
+      </tr>`).join('')}
+    </tbody>
+  `;
+}
+buildConduitTable();
+
+</script>
+</body>
+</html>
